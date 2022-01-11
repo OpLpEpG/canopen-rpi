@@ -17,13 +17,13 @@ from urllib.parse import parse_qsl, urlparse
 import socketcanopen
 
 # Server constants
-CAN_INTERFACES = ["vcan0", "vcan1"] # Must be a list
+CAN_INTERFACES = ["can0", "can1"] # Must be a list
 HTTP_SERVER_IP_ADDRESS = "" # Empty string for any address
 HTTP_SERVER_PORT = 8002
 WWW_DIR = path.dirname(path.realpath(__file__))
 
 # Gateway variables (default value assignments)
-default_net = "vcan0" # When 'default' net is specified
+default_net = "can0" # When 'default' net is specified
 default_node_id = 0xFF # 0xFF = Invalid
 command_timeout = 1 # Default, in seconds (value sent in ms)
 sdo_timeout = 1 # Default, in seconds (value sent in ms)
@@ -48,6 +48,7 @@ def coerce(value, datatype):
 
 
 def parse_request(request):
+#  /cia309-5/1.0/12345678/default/10/.cmd
     match = re.match('/cia309-5/(\d+\.\d+)/(\d{1,10})/(0x[0-9a-f]{1,4}|\d{1,10}|default|none|all)/(0x[0-9a-f]{1,2}|\d{1,3}|default|none|all)/(.*)', request, re.IGNORECASE)
     if match is None:
         raise ValueError("invalid syntax")
@@ -241,9 +242,9 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                     if node == 'all':
                         node_id = 0
-                    elif node_id == 'default':
+                    elif node == 'default':
                         node_id = default_node_id
-                    elif node_id == 'none':
+                    elif node == 'none':
                         node_id = None
                     else:
                         node_id = node
@@ -352,7 +353,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                                 if index == 'all':
                                     raise NotImplementedError # "Resource", should use EDS
 
-                                req = socketcanopen.SdoUploadRequest(node_id, index, subindex)
+                                req = socketcanopen.SdoUploadInitiateRequest(node_id, index, subindex)
                                 res = exec_sdo(bus, req, sdo_timeout)
                                 command_response["data"] = "0x{:08X}".format(res.sdo_data)
                                 command_response["length"] = "u32" # Lookup data type in EDS?

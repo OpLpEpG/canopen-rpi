@@ -270,14 +270,19 @@ class SdoUploadInitiateRequest(SdoRequest):
     def __init__(self, node_id, index, subindex):
         header = SDO_CCS_UPLOAD_INITIATE << SDO_CS_BITNUM
         sdo_data = struct.pack("<HBI", index, subindex, 0)
+        self.index = index
+        self.subindex = subindex
         super().__init__(node_id, header, sdo_data)
 
 
 class SdoUploadInitiateResponse(SdoResponse):
     def __init__(self, node_id, n, e, s, index, subindex, data):
         header = (SDO_SCS_UPLOAD_INITIATE << SDO_CS_BITNUM) + (n << SDO_INITIATE_N_BITNUM) + (e << SDO_E_BITNUM) + (s << SDO_S_BITNUM)
-        sdo_data = struct.pack("<HB", index, subindex) + data
-        super().__init__(node_id, SDO_SCS_UPLOAD_INITIATE, n, e, s, index, subindex, data)
+        sdo_data = struct.pack("<HB", index, subindex) + data.to_bytes(2, 'little')
+        self.index = index
+        self.subindex = subindex
+        super().__init__(node_id, header, sdo_data)
+        # super().__init__(node_id, SDO_SCS_UPLOAD_INITIATE, n, e, s, index, subindex, data)
 
 
 class SdoUploadSegmentRequest(SdoRequest):

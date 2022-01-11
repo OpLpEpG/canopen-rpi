@@ -22,15 +22,15 @@ class Indicator:
 
 
 class ErrorIndicator(Indicator):
-    def __init__(self, channel, init_state=can.BusState.BUS_OFF, interval=1):
+    def __init__(self, channel, init_state=can.BusState.PASSIVE, interval=1):
         init_state = self._get_state(init_state)
         self.interval = interval
         super().__init__(channel, init_state)
 
     def _get_state(self, err_state):
-        if err_state == can.BusState.ERROR_ACTIVE:
+        if err_state == can.BusState.ERROR:
             indicator_state = self.OFF
-        elif err_state == can.BusState.ERROR_PASSIVE:
+        elif err_state == can.BusState.PASSIVE:
             indicator_state = self.FLASH1
         else: # BUS-OFF or UNKNOWN
             indicator_state = self.ON
